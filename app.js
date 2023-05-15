@@ -36,6 +36,13 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
+const listSchema = new mongoose.Schema ({
+  name: String,
+  items: [itemsSchema]
+});
+
+const List = mongoose.model("List", listSchema);
+
 
 app.get("/", function(req, res) {
 
@@ -51,6 +58,17 @@ app.get("/", function(req, res) {
   })
 
 });
+
+app.get("/:customList", function(req, res) {
+  const customListName = req.params.customList;
+
+  const list = new List ({
+    name: customListName,
+    items: defaultItems
+  });
+
+  list.save();
+})
 
 app.post("/", function(req, res){
 
@@ -72,9 +90,7 @@ app.post("/delete", function(req, res) {
   res.redirect("/");
 })
 
-app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
-});
+
 
 app.get("/about", function(req, res){
   res.render("about");
