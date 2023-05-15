@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const date = require(__dirname + "/date.js");
 
 const app = express();
+const uri = require(__dirname + "/mongourl.js");
 
 app.set('view engine', 'ejs');
 
