@@ -22,13 +22,23 @@ const itemsSchema = new mongoose.Schema ({
 
 const Item = mongoose.model('Item', itemsSchema);
 
-const items = ["Buy Food", "Cook Food", "Eat Food"];
+const item1 = new Item ({
+  name: "Welcome to the to-do list!"
+});
+
+const item2 = new Item({
+  name: "Click the + button to add a new item."
+})
+
+const item3 = new Item({
+  name: "Click this to delete an item"
+})
+
 const workItems = [];
 
 app.get("/", function(req, res) {
 
-const day = date.getDate();
-
+  
   res.render("list", {listTitle: "Today", newListItems: items});
 
 });
