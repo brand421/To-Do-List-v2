@@ -31,30 +31,46 @@ const item2 = new Item({
 })
 
 const item3 = new Item({
-  name: "Click this to delete an item"
+  name: "Click the checkbox to complete an item"
 })
 
-const workItems = [];
+const defaultItems = [item1, item2, item3];
+
 
 app.get("/", function(req, res) {
 
   
-  res.render("list", {listTitle: "Today", newListItems: items});
+  Item.find({}).then(function(foundItems) {
+    if(foundItems.length === 0) {
+      Item.insertMany(defaultItems);
+      res.redirect("/");
+    } else {
+      res.render("list", {listTitle: "Today", newListItems: foundItems});
+    }
+    
+  })
 
 });
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  const itemName = req.body.newItem;
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  Item.create({name: itemName});
+
+  res.redirect("/");
+
 });
+
+app.post("/delete", function(req, res) {
+  const checkedItem = req.body.checkbox;
+  Item.findByIdAndRemove(checkedItem).then(function() {
+    console.log(checkedItem + " is deleted.");
+  }).catch(function(err) {
+    console.log(err);
+  });
+  res.redirect("/");
+})
 
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
