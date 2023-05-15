@@ -2,15 +2,25 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const date = require(__dirname + "/date.js");
+const mongoose = require("mongoose");
 
-const app = express();
 const uri = require(__dirname + "/mongourl.js");
+const app = express();
 
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
+
+const url = Object.values(uri).toString();
+
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
+const itemsSchema = new mongoose.Schema ({
+  name: String
+});
+
+const Item = mongoose.model('Item', itemsSchema);
 
 const items = ["Buy Food", "Cook Food", "Eat Food"];
 const workItems = [];
@@ -19,7 +29,7 @@ app.get("/", function(req, res) {
 
 const day = date.getDate();
 
-  res.render("list", {listTitle: day, newListItems: items});
+  res.render("list", {listTitle: "Today", newListItems: items});
 
 });
 
