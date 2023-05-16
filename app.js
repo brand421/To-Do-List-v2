@@ -61,13 +61,25 @@ app.get("/", function(req, res) {
 
 app.get("/:customList", function(req, res) {
   const customListName = req.params.customList;
+  const capitalizeName = customListName.charAt(0).toUpperCase() + customListName.slice(1);
 
-  const list = new List ({
-    name: customListName,
-    items: defaultItems
-  });
+  List.findOne({name: customListName})
+  .then(function(result) {
+    if (!result) {
+      const list = new List ({
+        name: customListName,
+        items: defaultItems
+      });
+      console.log("New list created!");
+      list.save();
+      res.redirect("/" + customListName);
+    } else {
+      res.render("list", {listTitle: capitalizeName, newListItems: result.items})
+    }
+  })
+  
 
-  list.save();
+  
 })
 
 app.post("/", function(req, res){
