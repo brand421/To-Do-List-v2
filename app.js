@@ -76,19 +76,22 @@ app.get("/:customList", function(req, res) {
     } else {
       res.render("list", {listTitle: capitalizeName, newListItems: result.items})
     }
-  })
-  
-
-  
+  })  
 })
+
 
 app.post("/", function(req, res){
 
   const itemName = req.body.newItem;
+  const listName = req.body.list;
 
-  Item.create({name: itemName});
+  if (listName === "Today") {
+    Item.create({name: itemName});
+    res.redirect("/");
+  } else {
 
-  res.redirect("/");
+  }
+  
 
 });
 
