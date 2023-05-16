@@ -14,7 +14,7 @@ app.use(express.static("public"));
 
 const url = Object.values(uri).toString();
 
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(url, { useNewUrlParser: true});
 
 const itemsSchema = new mongoose.Schema ({
   name: String
@@ -47,25 +47,24 @@ const List = mongoose.model("List", listSchema);
 app.get("/", function(req, res) {
 
   
-  Item.find({}).then(function(foundItems) {
-    if(foundItems.length === 0) {
-      Item.insertMany(defaultItems);
-      res.redirect("/");
-    } else {
-      res.render("list", {listTitle: "Today", newListItems: foundItems});
-    }
-    
+  Item.find({})
+    .then(function(foundItems) {
+      if(foundItems.length === 0) {
+        Item.insertMany(defaultItems);
+        res.redirect("/");
+      } else {
+        res.render("list", {listTitle: "Today", newListItems: foundItems});
+      }
   })
 
 });
 
 app.get("/:customList", function(req, res) {
   const customListName = req.params.customList;
-  const capitalizeName = customListName.charAt(0).toUpperCase() + customListName.slice(1);
 
-  List.findOne({name: customListName})
-  .then(function(result) {
-    if (!result) {
+  List.findOne({name: customListName}).exec()
+  .then(function(foundList) {
+    if (!foundList) {
       const list = new List ({
         name: customListName,
         items: defaultItems
@@ -74,7 +73,7 @@ app.get("/:customList", function(req, res) {
       list.save();
       res.redirect("/" + customListName);
     } else {
-      res.render("list", {listTitle: capitalizeName, newListItems: result.items})
+      res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
     }
   })  
 })
@@ -85,25 +84,40 @@ app.post("/", function(req, res){
   const itemName = req.body.newItem;
   const listName = req.body.list;
 
+  const item = new Item ({
+    name: itemName,
+  });
+
   if (listName === "Today") {
-    Item.create({name: itemName});
+    item.save();
     res.redirect("/");
   } else {
-
+    List.findOne({ name: listName }).exec()
+      .then(function (foundList) {
+        foundList.items.push(item);
+        foundList.save();
+        res.redirect("/" + listName);
+      })
   }
-  
 
 });
 
 app.post("/delete", function(req, res) {
   const checkedItem = req.body.checkbox;
-  Item.findByIdAndRemove(checkedItem).then(function() {
-    console.log(checkedItem + " is deleted.");
-  }).catch(function(err) {
-    console.log(err);
-  });
-  res.redirect("/");
-})
+  const listName = req.body.listName;
+
+  if(listName === "Today" && checkedItem != undefined) {
+    Item.findByIdAndRemove(checkedItem)
+      .then(function() {
+      console.log(checkedItem + " is deleted.");
+      res.redirect("/");
+      })
+  } else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItem} } });
+    res.redirect("/" + listName);
+  }
+});
+
 
 
 
